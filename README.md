@@ -1,1 +1,18 @@
-"# n8n-internship-repo" 
+# n8n-internship-repo
+
+## نصب
+
+برای نصب و راه‌اندازی این پروژه، مراحل زیر را دنبال کنید:
+
+1. مخزن را کلون کنید:
+   ```bash
+   git clone https://github.com/your-username/n8n-internship-repo.git
+   ```
+2. به دایرکتوری پروژه بروید:
+   ```bash
+   cd n8n-internship-repo
+   ```
+3. وابستگی‌ها را نصب کنید:
+   ```bash
+   npm install
+   ```
