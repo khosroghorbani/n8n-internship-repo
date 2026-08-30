@@ -42,3 +42,21 @@
    ```bash
    npm start
    ```
+
+## نصب
+
+پیش‌نیازها:
+- Python 3.8+
+- pip
+
+دستورالعمل نصب:
+```bash
+pip install -r requirements.txt
+```
+
+اجرای برنامه:
+```bash
+python main.py
+```
+
+تست‌شده روی: Linux, macOS, Windows
