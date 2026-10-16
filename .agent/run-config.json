@@ -1,0 +1,8 @@
+{
+  "execution_id": "3",
+  "attempt": 1,
+  "setup_command": "if [ -f package.json ]; then npm install; else echo 'package.json not available in the inspected input'; fi",
+  "run_command": "rm -rf /tmp/n8n-internship-repo && git clone --depth 1 https://github.com/khosroghorbani/n8n-internship-repo.git /tmp/n8n-internship-repo && cd /tmp/n8n-internship-repo && printf '%s\\n' '--- git branch/status ---' && git branch --show-current && git status --short && printf '%s\\n' '--- top-level files ---' && find . -maxdepth 1 -type f -print | sort && printf '%s\\n' '--- important directories ---' && find . -maxdepth 3 -type d -not -path '*/.git*' | sort",
+  "test_command": "cd /tmp/n8n-internship-repo && if [ -f package.json ]; then npm test -- --if-present; elif [ -f Makefile ]; then make test; elif [ -f pytest.ini ] || [ -f pyproject.toml ] || [ -f setup.cfg ]; then pytest; else echo 'No recognized test configuration found'; fi",
+  "generated_at": "2026-10-16T14:25:03.114Z"
+}
