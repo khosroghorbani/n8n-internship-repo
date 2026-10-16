@@ -1,0 +1,115 @@
+name: Coding Agent Sandbox - Simple
+
+run-name: coding-agent-${{ inputs.request_id }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      request_id:
+        description: Unique request id from n8n
+        required: true
+        type: string
+      changes_b64:
+        description: Base64 encoded JSON change set
+        required: true
+        type: string
+      setup_command:
+        required: false
+        type: string
+      run_command:
+        required: false
+        type: string
+      test_command:
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  coding-agent-sandbox:
+    name: coding-agent-sandbox
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout codebase
+        uses: actions/checkout@v4
+
+      - name: Apply agent changes inside sandbox
+        env:
+          CHANGES_B64: ${{ inputs.changes_b64 }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, json, os, pathlib, shutil
+
+          changes = json.loads(base64.b64decode(os.environ['CHANGES_B64']).decode('utf-8'))
+          root = pathlib.Path.cwd().resolve()
+          protected = pathlib.Path('.github/workflows/coding-agent-sandbox-simple.yml')
+
+          for change in changes:
+              rel = pathlib.Path(str(change.get('path', '')))
+              if not str(rel) or rel.is_absolute() or '..' in rel.parts or rel == protected:
+                  raise SystemExit(f'Unsafe path: {rel}')
+
+              target = (root / rel).resolve()
+              if root not in target.parents and target != root:
+                  raise SystemExit(f'Path escapes repository: {rel}')
+
+              action = str(change.get('action', '')).lower()
+              if action in ('create', 'update'):
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  target.write_text(str(change.get('content', '')), encoding='utf-8')
+              elif action == 'delete':
+                  if target.is_dir():
+                      shutil.rmtree(target)
+                  elif target.exists():
+                      target.unlink()
+              else:
+                  raise SystemExit(f'Unsupported action: {action}')
+          PY
+
+      - name: Execute setup, code and tests
+        env:
+          SETUP_COMMAND: ${{ inputs.setup_command }}
+          RUN_COMMAND: ${{ inputs.run_command }}
+          TEST_COMMAND: ${{ inputs.test_command }}
+        run: |
+          set +e
+
+          setup_exit=0
+          run_exit=0
+          test_exit=0
+
+          echo "===== SETUP ====="
+          if [ -n "$SETUP_COMMAND" ]; then
+            timeout 240s bash -lc "$SETUP_COMMAND"
+            setup_exit=$?
+          fi
+          echo "AGENT_SETUP_EXIT=$setup_exit"
+
+          echo "===== RUN ====="
+          if [ "$setup_exit" -eq 0 ] && [ -n "$RUN_COMMAND" ]; then
+            timeout 120s bash -lc "$RUN_COMMAND"
+            run_exit=$?
+          elif [ "$setup_exit" -ne 0 ]; then
+            run_exit=97
+          fi
+          echo "AGENT_RUN_EXIT=$run_exit"
+
+          echo "===== TEST ====="
+          if [ "$setup_exit" -eq 0 ] && [ -n "$TEST_COMMAND" ]; then
+            timeout 240s bash -lc "$TEST_COMMAND"
+            test_exit=$?
+          elif [ "$setup_exit" -ne 0 ]; then
+            test_exit=98
+          fi
+          echo "AGENT_TEST_EXIT=$test_exit"
+
+          echo "===== RESULT ====="
+          echo "setup=$setup_exit run=$run_exit test=$test_exit"
+
+          if [ "$setup_exit" -ne 0 ] || [ "$run_exit" -ne 0 ] || [ "$test_exit" -ne 0 ]; then
+            exit 1
+          fi
