@@ -1,0 +1,8 @@
+{
+  "execution_id": "4",
+  "attempt": 1,
+  "setup_command": "if [ -f package-lock.json ]; then npm ci; elif [ -f package.json ]; then npm install; else echo 'No package.json found; skipping npm dependency installation.'; fi",
+  "run_command": "set -e; python -m py_compile math.utils.py; if [ -f package.json ]; then npm run build --if-present; npm run lint --if-present; else echo 'No package.json found; Python smoke/build check completed.'; fi",
+  "test_command": "python - <<'PY'\nimport importlib.util\nfrom pathlib import Path\n\npath = Path('math.utils.py')\nspec = importlib.util.spec_from_file_location('math_utils', path)\nmodule = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(module)\n\nassert module.factorial(0) == 1\nassert module.factorial(1) == 1\nassert module.factorial(5) == 120\nassert module.factorial(10) == 3628800\n\nfor value in (-1, 1.5, True, False, '5'):\n    try:\n        module.factorial(value)\n    except ValueError:\n        pass\n    else:\n        raise AssertionError(f'Expected ValueError for {value!r}')\n\nprint('factorial smoke tests completed')\nPY\nif [ -f package.json ]; then npm test --if-present; fi",
+  "generated_at": "2026-10-16T14:25:12.768Z"
+}
