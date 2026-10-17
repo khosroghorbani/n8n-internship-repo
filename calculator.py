@@ -43,9 +43,17 @@ def divide(left: Real, right: Real) -> float:
 
 
 def power(left: Real, right: Real) -> Real:
-    """Return the first real number raised to the power of the second."""
+    """Return the first real number raised to the power of the second.
+
+    Raises:
+        ValueError: If the result is not a real number.
+        TypeError: If either operand is not a real number.
+    """
     _validate_numbers(left, right)
-    return left ** right
+    result = left ** right
+    if not isinstance(result, Real):
+        raise ValueError("power result must be a real number")
+    return result
 
 
 def main() -> None:

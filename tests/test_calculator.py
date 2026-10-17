@@ -31,6 +31,10 @@ class CalculatorTests(unittest.TestCase):
         self.assertAlmostEqual(power(2, -3), 0.125)
         self.assertAlmostEqual(power(-2, -2), 0.25)
 
+    def test_power_with_negative_base_and_fractional_exponent_raises_value_error(self):
+        with self.assertRaises(ValueError):
+            power(-4, 0.5)
+
     def test_divide_by_zero_raises_value_error(self):
         with self.assertRaises(ValueError):
             divide(10, 0)
