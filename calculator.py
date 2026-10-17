@@ -42,6 +42,12 @@ def divide(left: Real, right: Real) -> float:
     return left / right
 
 
+def power(left: Real, right: Real) -> Real:
+    """Return the first real number raised to the power of the second."""
+    _validate_numbers(left, right)
+    return left ** right
+
+
 def main() -> None:
     """Run a small smoke demonstration of the calculator operations."""
     print(f"2 + 3 = {add(2, 3)}")
