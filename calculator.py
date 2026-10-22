@@ -27,8 +27,14 @@ def divide(a, b):
     return a / b
 
 
+def power(a, b):
+    """Return a raised to the power of b."""
+    return a ** b
+
+
 if __name__ == "__main__":
     print("2 + 3 =", add(2, 3))
     print("7 - 4 =", subtract(7, 4))
     print("5 * 6 =", multiply(5, 6))
     print("8 / 2 =", divide(8, 2))
+    print("2 ** 3 =", power(2, 3))
